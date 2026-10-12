@@ -1,0 +1,7 @@
+**
+!package.json
+!README.md
+!language-configuration.json
+!syntaxes/tree-sitter-query.tmLanguage.json
+!dist/extension.cjs
+!dist/extension.cjs.map

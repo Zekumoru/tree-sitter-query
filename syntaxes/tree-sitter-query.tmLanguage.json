@@ -1,0 +1,84 @@
+{
+  "name": "Tree-sitter Query",
+  "scopeName": "source.tree-sitter-query",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#predicates" },
+    { "include": "#captures" },
+    { "include": "#fields" },
+    { "include": "#operators" },
+    { "include": "#nodes" }
+  ],
+  "repository": {
+    "comments": {
+      "name": "comment.line.semicolon.tree-sitter-query",
+      "match": ";[^\\r\\n]*"
+    },
+    "strings": {
+      "name": "string.quoted.double.tree-sitter-query",
+      "begin": "\"",
+      "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.tree-sitter-query" } },
+      "end": "\"",
+      "endCaptures": { "0": { "name": "punctuation.definition.string.end.tree-sitter-query" } },
+      "patterns": [{
+        "name": "constant.character.escape.tree-sitter-query",
+        "match": "\\\\(?:.|$)"
+      }]
+    },
+    "predicates": {
+      "name": "meta.predicate.tree-sitter-query",
+      "begin": "(#[\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*[?!])",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.predicate.tree-sitter-query" }
+      },
+      "end": "(?=\\))",
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#strings" },
+        { "include": "#captures" },
+        { "name": "constant.numeric.tree-sitter-query", "match": "(?<![\\p{L}\\p{N}_.-])-?[0-9]+(?:\\.[0-9]+)?(?![\\p{L}\\p{N}_.-])" },
+        { "name": "constant.other.symbol.tree-sitter-query", "match": "[\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*" }
+      ]
+    },
+    "captures": {
+      "name": "variable.other.constant.capture.tree-sitter-query",
+      "match": "@[\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*"
+    },
+    "fields": {
+      "patterns": [
+        {
+          "name": "meta.field.tree-sitter-query",
+          "match": "([\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*)(\\s*)(:)",
+          "captures": {
+            "1": { "name": "variable.other.property.field.tree-sitter-query" },
+            "3": { "name": "punctuation.separator.key-value.tree-sitter-query" }
+          }
+        },
+        {
+          "match": "(!)\\s*([\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*)",
+          "captures": {
+            "1": { "name": "keyword.operator.negation.tree-sitter-query" },
+            "2": { "name": "variable.other.property.field.negated.tree-sitter-query" }
+          }
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        { "name": "keyword.operator.quantifier.tree-sitter-query", "match": "[?*+]" },
+        { "name": "keyword.operator.anchor.tree-sitter-query", "match": "\\." },
+        { "name": "keyword.operator.subtype.tree-sitter-query", "match": "/" },
+        { "name": "punctuation.section.group.begin.tree-sitter-query", "match": "\\(" },
+        { "name": "punctuation.section.group.end.tree-sitter-query", "match": "\\)" },
+        { "name": "punctuation.section.brackets.begin.tree-sitter-query", "match": "\\[" },
+        { "name": "punctuation.section.brackets.end.tree-sitter-query", "match": "\\]" },
+        { "name": "keyword.control.predicate.tree-sitter-query", "match": "#[\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*[?!]" }
+      ]
+    },
+    "nodes": {
+      "name": "entity.name.type.node.tree-sitter-query",
+      "match": "[\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*"
+    }
+  }
+}

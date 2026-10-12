@@ -1,0 +1,46 @@
+{
+  "name": "tree-sitter-query",
+  "displayName": "Tree-sitter Query",
+  "description": "Theme-aware highlighting and syntax-aware formatting for Tree-sitter queries.",
+  "version": "0.1.0",
+  "publisher": "zekumoru",
+  "private": true,
+  "engines": {
+    "vscode": "^1.100.0",
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+  },
+  "categories": ["Programming Languages", "Formatters"],
+  "main": "./dist/extension.cjs",
+  "contributes": {
+    "languages": [{
+      "id": "tree-sitter-query",
+      "aliases": ["Tree-sitter Query"],
+      "extensions": [".scm"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "tree-sitter-query",
+      "scopeName": "source.tree-sitter-query",
+      "path": "./syntaxes/tree-sitter-query.tmLanguage.json"
+    }]
+  },
+  "packageManager": "pnpm@12.10.1",
+  "scripts": {
+    "build": "rollup --config",
+    "dev": "rollup --config --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:vscode": "pnpm build && node tests/run-vscode.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/vscode": "~1.100.0",
+    "@vscode/test-electron": "^3.1.0",
+    "rollup": "^4.64.5",
+    "typescript": "~7.0.2",
+    "vitest": "^5.0.4",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  }
+}
