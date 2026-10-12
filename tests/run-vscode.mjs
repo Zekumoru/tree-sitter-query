@@ -1,6 +1,6 @@
+import { runTests } from '@vscode/test-electron';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { runTests } from '@vscode/test-electron';
 
 const workspace = resolve('.vscode-test/workspace');
 await mkdir(resolve(workspace, '.vscode'), { recursive: true });

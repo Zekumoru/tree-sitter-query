@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { Registry, parseRawGrammar, INITIAL } from 'vscode-textmate';
-import type { IGrammar, IToken, StateStack } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'vscode-oniguruma';
+import type { IGrammar, IToken, StateStack } from 'vscode-textmate';
+import { INITIAL, parseRawGrammar, Registry } from 'vscode-textmate';
 
 let grammar: IGrammar;
 const require = createRequire(import.meta.url);

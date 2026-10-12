@@ -8,6 +8,7 @@ This VS Code extension highlights and formats Tree-sitter queries (`.scm`).
 - `syntaxes/tree-sitter-query.tmLanguage.json` supplies theme-aware highlighting; `language-configuration.json` defines comments and brackets.
 - `tests/*.test.ts` contains unit and grammar tests; `tests/fixtures/` holds query samples. `tests/vscode.cjs` and `tests/run-vscode.mjs` run editor integration checks.
 - `.vscode/` supplies development launch/tasks. `.build/`, `dist/`, `.vscode-test/`, and VSIX files are generated; do not edit them.
+- `scripts/organize-imports.mjs` calls the project's native TypeScript organizer for development formatting.
 - `plan.md` records the implementation brief; `README.md` covers packaging and installation.
 
 ## Build, Test, and Development Commands
@@ -16,7 +17,7 @@ This VS Code extension highlights and formats Tree-sitter queries (`.scm`).
 - `pnpm build`: compile TypeScript and bundle with Rollup into `dist/extension.cjs`.
 - `pnpm dev`: watch source changes and rebuild.
 - `pnpm lint` / `pnpm lint:fix`: run Oxlint correctness and type-aware checks; optionally apply automatic fixes.
-- `pnpm format` / `pnpm format:check`: apply or verify Prettier formatting.
+- `pnpm format` / `pnpm format:check`: organize JavaScript/TypeScript imports, then apply or verify Prettier formatting. The check command does not modify files.
 - `pnpm typecheck`: check TypeScript without emitting files.
 - `pnpm test`: run the Vitest suite.
 - `pnpm test:vscode`: build and test in an isolated VS Code instance; downloads a test copy unless `VSCODE_EXECUTABLE_PATH` is provided.
@@ -41,4 +42,4 @@ Use imperative subjects without prefixes: `Update README` or `Produce compact an
 
 Describe behavior changes, verification results, and related issues in PRs. Include before/after queries for formatting changes or screenshots for highlighting changes.
 
-Keep scope limited to highlighting and formatting; avoid new runtime dependencies, external query formatters, or language servers. Agents must not commit, push, or publish unless explicitly requested.
+Keep the extension runtime limited to highlighting and formatting; avoid new runtime dependencies, external query formatters, or language servers. Agents must not commit, push, or publish unless explicitly requested.

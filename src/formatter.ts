@@ -1,5 +1,5 @@
-import { tokenize } from './tokenizer.js';
 import type { Token } from './tokenizer.js';
+import { tokenize } from './tokenizer.js';
 
 export interface FormattingOptions {
   insertSpaces: boolean;
