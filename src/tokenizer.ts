@@ -1,7 +1,19 @@
 export type TokenKind =
-  | 'openParen' | 'closeParen' | 'openBracket' | 'closeBracket'
-  | 'identifier' | 'capture' | 'predicate' | 'string' | 'comment'
-  | 'colon' | 'slash' | 'negation' | 'quantifier' | 'anchor' | 'unknown';
+  | 'openParen'
+  | 'closeParen'
+  | 'openBracket'
+  | 'closeBracket'
+  | 'identifier'
+  | 'capture'
+  | 'predicate'
+  | 'string'
+  | 'comment'
+  | 'colon'
+  | 'slash'
+  | 'negation'
+  | 'quantifier'
+  | 'anchor'
+  | 'unknown';
 
 export interface Token {
   kind: TokenKind;
@@ -16,9 +28,17 @@ export interface Tokenization {
 }
 
 const punctuation: Record<string, TokenKind> = {
-  '(': 'openParen', ')': 'closeParen', '[': 'openBracket', ']': 'closeBracket',
-  ':': 'colon', '/': 'slash', '!': 'negation', '.': 'anchor',
-  '?': 'quantifier', '*': 'quantifier', '+': 'quantifier'
+  '(': 'openParen',
+  ')': 'closeParen',
+  '[': 'openBracket',
+  ']': 'closeBracket',
+  ':': 'colon',
+  '/': 'slash',
+  '!': 'negation',
+  '.': 'anchor',
+  '?': 'quantifier',
+  '*': 'quantifier',
+  '+': 'quantifier'
 };
 
 /** Keep the exact text and UTF-16 offsets; whitespace alone is omitted. */
@@ -39,8 +59,12 @@ export function tokenize(source: string): Tokenization {
     let kind: TokenKind;
     if (char === ';') {
       kind = 'comment';
-      while (offset < source.length && source[offset] !== '\n'
-        && !(source[offset] === '\r' && source[offset + 1] === '\n')) offset++;
+      while (
+        offset < source.length &&
+        source[offset] !== '\n' &&
+        !(source[offset] === '\r' && source[offset + 1] === '\n')
+      )
+        offset++;
     } else if (char === '"') {
       kind = 'string';
       offset++;

@@ -21,10 +21,12 @@
       "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.tree-sitter-query" } },
       "end": "\"",
       "endCaptures": { "0": { "name": "punctuation.definition.string.end.tree-sitter-query" } },
-      "patterns": [{
-        "name": "constant.character.escape.tree-sitter-query",
-        "match": "\\\\(?:.|$)"
-      }]
+      "patterns": [
+        {
+          "name": "constant.character.escape.tree-sitter-query",
+          "match": "\\\\(?:.|$)"
+        }
+      ]
     },
     "predicates": {
       "name": "meta.predicate.tree-sitter-query",
@@ -37,8 +39,14 @@
         { "include": "#comments" },
         { "include": "#strings" },
         { "include": "#captures" },
-        { "name": "constant.numeric.tree-sitter-query", "match": "(?<![\\p{L}\\p{N}_.-])-?[0-9]+(?:\\.[0-9]+)?(?![\\p{L}\\p{N}_.-])" },
-        { "name": "constant.other.symbol.tree-sitter-query", "match": "[\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*" }
+        {
+          "name": "constant.numeric.tree-sitter-query",
+          "match": "(?<![\\p{L}\\p{N}_.-])-?[0-9]+(?:\\.[0-9]+)?(?![\\p{L}\\p{N}_.-])"
+        },
+        {
+          "name": "constant.other.symbol.tree-sitter-query",
+          "match": "[\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*"
+        }
       ]
     },
     "captures": {
@@ -73,7 +81,10 @@
         { "name": "punctuation.section.group.end.tree-sitter-query", "match": "\\)" },
         { "name": "punctuation.section.brackets.begin.tree-sitter-query", "match": "\\[" },
         { "name": "punctuation.section.brackets.end.tree-sitter-query", "match": "\\]" },
-        { "name": "keyword.control.predicate.tree-sitter-query", "match": "#[\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*[?!]" }
+        {
+          "name": "keyword.control.predicate.tree-sitter-query",
+          "match": "#[\\p{L}\\p{N}_-][\\p{L}\\p{N}_.-]*[?!]"
+        }
       ]
     },
     "nodes": {

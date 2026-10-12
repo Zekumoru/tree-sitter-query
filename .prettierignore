@@ -1,0 +1,11 @@
+# Generated files
+node_modules/
+.build/
+dist/
+.vscode-test/
+*.vsix
+pnpm-lock.yaml
+
+# Preserve query fixtures and the original implementation brief
+**/*.scm
+plan.md

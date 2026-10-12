@@ -20,10 +20,14 @@ interface Group {
 }
 
 function needsSpace(previous: Token | undefined, token: Token): boolean {
-  return previous !== undefined
-    && previous.kind !== 'openParen' && previous.kind !== 'openBracket'
-    && previous.kind !== 'slash' && previous.kind !== 'negation'
-    && !['closeParen', 'closeBracket', 'colon', 'slash', 'quantifier'].includes(token.kind);
+  return (
+    previous !== undefined &&
+    previous.kind !== 'openParen' &&
+    previous.kind !== 'openBracket' &&
+    previous.kind !== 'slash' &&
+    previous.kind !== 'negation' &&
+    !['closeParen', 'closeBracket', 'colon', 'slash', 'quantifier'].includes(token.kind)
+  );
 }
 
 /** Change whitespace only. Unclosed strings, unknown characters, and mismatched
@@ -44,15 +48,22 @@ export function formatQuery(source: string, options: FormattingOptions): string 
       const parent = stack.at(-1);
       if (parent) parent.hasChildren = true;
       const group: Group = {
-        open: token, closeIndex: index, startColumn, width: 0, compact: true,
-        hasChildren: false, components: 0, fieldValue: previous?.kind === 'colon',
+        open: token,
+        closeIndex: index,
+        startColumn,
+        width: 0,
+        compact: true,
+        hasChildren: false,
+        components: 0,
+        fieldValue: previous?.kind === 'colon',
         predicate: false
       };
       groups.set(token, group);
       stack.push(group);
     } else if (token.kind === 'closeParen' || token.kind === 'closeBracket') {
       const group = stack.pop();
-      if (!group || (token.kind === 'closeParen') !== (group.open.kind === 'openParen')) return source;
+      if (!group || (token.kind === 'closeParen') !== (group.open.kind === 'openParen'))
+        return source;
       group.closeIndex = index;
       group.width = flatColumn - group.startColumn;
       // Several fields or nested components deserve separate lines even when
@@ -63,7 +74,8 @@ export function formatQuery(source: string, options: FormattingOptions): string 
       const parent = stack.at(-1);
       if (parent) {
         parent.compact &&= group.compact && !group.predicate;
-        if (!group.fieldValue && (group.hasChildren || token.kind === 'closeBracket')) parent.components++;
+        if (!group.fieldValue && (group.hasChildren || token.kind === 'closeBracket'))
+          parent.components++;
       }
     } else {
       const parent = stack.at(-1);
@@ -78,7 +90,7 @@ export function formatQuery(source: string, options: FormattingOptions): string 
 
   // Include captures, quantifiers, and attached parent closers in width checks.
   // Computing suffix widths backwards keeps deeply nested input linear.
-  const tails = new Array<number>(tokens.length).fill(0);
+  const tails = Array.from({ length: tokens.length }, () => 0);
   for (let index = tokens.length - 2; index >= 0; index--) {
     const next = tokens[index + 1]!;
     if (['capture', 'quantifier', 'closeParen'].includes(next.kind)) {
@@ -117,7 +129,7 @@ export function formatQuery(source: string, options: FormattingOptions): string 
     chunks.push(text);
     for (const char of text) {
       if (char === '\n') column = 0;
-      else if (char === '\t') column += width - column % width;
+      else if (char === '\t') column += width - (column % width);
       else column++;
     }
     onLine = true;
@@ -141,11 +153,16 @@ export function formatQuery(source: string, options: FormattingOptions): string 
       if (token.kind === 'closeBracket' && !group.compact) newline();
       write(token.text, stack.length);
     } else {
-      const postfix = (token.kind === 'capture' && !parent?.predicate) || token.kind === 'quantifier';
-      const joined = token.kind === 'colon' || token.kind === 'slash'
-        || previous?.kind === 'slash' || previous?.kind === 'negation';
+      const postfix =
+        (token.kind === 'capture' && !parent?.predicate) || token.kind === 'quantifier';
+      const joined =
+        token.kind === 'colon' ||
+        token.kind === 'slash' ||
+        previous?.kind === 'slash' ||
+        previous?.kind === 'negation';
       const afterField = previous?.kind === 'colon';
-      const head = previous === parent?.open && (token.kind === 'identifier' || token.kind === 'predicate');
+      const head =
+        previous === parent?.open && (token.kind === 'identifier' || token.kind === 'predicate');
 
       if (!postfix && !joined && !afterField && !head && !parent?.compact) {
         newline(previous?.kind === 'comment' ? blank : !parent && previous !== undefined);
@@ -168,8 +185,14 @@ export function formatQuery(source: string, options: FormattingOptions): string 
 
   // This also catches accidental merging of identifiers and comment swallowing.
   const check = tokenize(result);
-  if (!check.complete || check.tokens.length !== tokens.length
-    || tokens.some((token, index) => token.kind !== check.tokens[index]!.kind || token.text !== check.tokens[index]!.text)) {
+  if (
+    !check.complete ||
+    check.tokens.length !== tokens.length ||
+    tokens.some(
+      (token, index) =>
+        token.kind !== check.tokens[index]!.kind || token.text !== check.tokens[index]!.text
+    )
+  ) {
     return source;
   }
   return result;

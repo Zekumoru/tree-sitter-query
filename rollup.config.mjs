@@ -7,18 +7,22 @@ export default {
   external: ['vscode'],
   output: { file: 'dist/extension.cjs', format: 'cjs', sourcemap: true },
   watch: { exclude: '.build/**' },
-  plugins: [{
-    // TypeScript 7 has a CLI, but no stable compiler API for the older plugins.
-    name: 'typescript-cli',
-    buildStart() {
-      for (const file of readdirSync('src')) {
-        if (file.endsWith('.ts')) this.addWatchFile(resolve('src', file));
+  plugins: [
+    {
+      // TypeScript 7 has a CLI, but no stable compiler API for the older plugins.
+      name: 'typescript-cli',
+      buildStart() {
+        for (const file of readdirSync('src')) {
+          if (file.endsWith('.ts')) this.addWatchFile(resolve('src', file));
+        }
+        this.addWatchFile(resolve('tsconfig.json'));
+        this.addWatchFile(resolve('tsconfig.build.json'));
+        execFileSync(
+          process.execPath,
+          [resolve('node_modules/typescript/bin/tsc'), '-p', 'tsconfig.build.json'],
+          { stdio: 'inherit' }
+        );
       }
-      this.addWatchFile(resolve('tsconfig.json'));
-      this.addWatchFile(resolve('tsconfig.build.json'));
-      execFileSync(process.execPath, [
-        resolve('node_modules/typescript/bin/tsc'), '-p', 'tsconfig.build.json'
-      ], { stdio: 'inherit' });
     }
-  }]
+  ]
 };
