@@ -2,7 +2,7 @@
   "name": "tree-sitter-query",
   "displayName": "Tree-sitter Query",
   "description": "Theme-aware highlighting and syntax-aware formatting for Tree-sitter queries.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "zekumoru",
   "private": true,
   "engines": {

@@ -5,8 +5,8 @@ const vscode = require('vscode');
 
 exports.run = async function () {
   const root = vscode.workspace.workspaceFolders[0].uri.fsPath;
-  const original = '(node name:(identifier)?@name)@node';
-  const expected = '(node\n  name: (identifier)? @name\n) @node\n';
+  const original = '(node name:(identifier)?@name value:[(identifier)(string)])@node';
+  const expected = '(node\n  name: (identifier)? @name\n  value: [(identifier) (string)]) @node\n';
   const path = join(root, 'format.scm');
   await writeFile(path, original);
   const document = await vscode.workspace.openTextDocument(vscode.Uri.file(path));
@@ -57,7 +57,7 @@ exports.run = async function () {
   const tabs = new vscode.WorkspaceEdit();
   tabs.set(document.uri, tabEdits);
   assert.ok(await vscode.workspace.applyEdit(tabs));
-  assert.equal(document.getText(), '(node\n\tname: (identifier)? @name\n) @node\n', 'provider respects tabs');
+  assert.equal(document.getText(), '(node\n\tname: (identifier)? @name\n\tvalue: [(identifier) (string)]) @node\n', 'provider respects tabs');
 
   const malformed = await vscode.workspace.openTextDocument({ language: 'tree-sitter-query', content: '(unfinished' });
   const malformedEdits = await vscode.commands.executeCommand('vscode.executeFormatDocumentProvider', malformed.uri, {

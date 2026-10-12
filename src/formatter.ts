@@ -9,7 +9,21 @@ export interface FormattingOptions {
 
 interface Group {
   open: Token;
+  closeIndex: number;
+  startColumn: number;
+  width: number;
   compact: boolean;
+  hasChildren: boolean;
+  components: number;
+  fieldValue: boolean;
+  predicate: boolean;
+}
+
+function needsSpace(previous: Token | undefined, token: Token): boolean {
+  return previous !== undefined
+    && previous.kind !== 'openParen' && previous.kind !== 'openBracket'
+    && previous.kind !== 'slash' && previous.kind !== 'negation'
+    && !['closeParen', 'closeBracket', 'colon', 'slash', 'quantifier'].includes(token.kind);
 }
 
 /** Change whitespace only. Unclosed strings, unknown characters, and mismatched
@@ -20,22 +34,57 @@ export function formatQuery(source: string, options: FormattingOptions): string 
 
   const groups = new Map<Token, Group>();
   const stack: Group[] = [];
-  for (const token of tokens) {
+  let flatColumn = 0;
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index]!;
+    const previous = tokens[index - 1];
+    const startColumn = flatColumn + Number(needsSpace(previous, token));
+    flatColumn = startColumn + token.text.length;
     if (token.kind === 'openParen' || token.kind === 'openBracket') {
       const parent = stack.at(-1);
-      if (parent) parent.compact = false;
-      const group = { open: token, compact: token.kind === 'openParen' };
+      if (parent) parent.hasChildren = true;
+      const group: Group = {
+        open: token, closeIndex: index, startColumn, width: 0, compact: true,
+        hasChildren: false, components: 0, fieldValue: previous?.kind === 'colon',
+        predicate: false
+      };
       groups.set(token, group);
       stack.push(group);
     } else if (token.kind === 'closeParen' || token.kind === 'closeBracket') {
       const group = stack.pop();
       if (!group || (token.kind === 'closeParen') !== (group.open.kind === 'openParen')) return source;
-    } else if (['comment', 'colon', 'negation', 'anchor', 'quantifier'].includes(token.kind)) {
+      group.closeIndex = index;
+      group.width = flatColumn - group.startColumn;
+      // Several fields or nested components deserve separate lines even when
+      // they fit. Leaf children and nesting depth alone do not force a break.
+      if (!group.predicate && group.components > 1) group.compact = false;
+      // Inline alternatives should be short enough to scan within a field.
+      if (token.kind === 'closeBracket' && group.width > 40) group.compact = false;
       const parent = stack.at(-1);
-      if (parent) parent.compact = false;
+      if (parent) {
+        parent.compact &&= group.compact && !group.predicate;
+        if (!group.fieldValue && (group.hasChildren || token.kind === 'closeBracket')) parent.components++;
+      }
+    } else {
+      const parent = stack.at(-1);
+      if (parent) {
+        if (token.kind === 'predicate') parent.predicate = true;
+        if (token.kind === 'comment' || /[\r\n]/.test(token.text)) parent.compact = false;
+        if (token.kind === 'colon' || token.kind === 'negation') parent.components++;
+      }
     }
   }
   if (stack.length) return source;
+
+  // Include captures, quantifiers, and attached parent closers in width checks.
+  // Computing suffix widths backwards keeps deeply nested input linear.
+  const tails = new Array<number>(tokens.length).fill(0);
+  for (let index = tokens.length - 2; index >= 0; index--) {
+    const next = tokens[index + 1]!;
+    if (['capture', 'quantifier', 'closeParen'].includes(next.kind)) {
+      tails[index] = Number(needsSpace(tokens[index], next)) + next.text.length + tails[index + 1]!;
+    }
+  }
 
   const eol = options.eol ?? (source.includes('\r\n') ? '\r\n' : '\n');
   const width = Number.isInteger(options.tabSize) && options.tabSize > 0 ? options.tabSize : 2;
@@ -43,6 +92,7 @@ export function formatQuery(source: string, options: FormattingOptions): string 
   const chunks: string[] = source.startsWith('\ufeff') ? ['\ufeff'] : [];
   let onLine = false;
   let breaks = 0;
+  let column = 0;
 
   function newline(blank = false): void {
     const count = blank ? 2 : 1;
@@ -53,12 +103,23 @@ export function formatQuery(source: string, options: FormattingOptions): string 
       }
     }
     onLine = false;
+    column = 0;
   }
 
   function write(text: string, depth: number, space = false): void {
-    if (!onLine) chunks.push(indent.repeat(depth));
-    else if (space) chunks.push(' ');
+    if (!onLine) {
+      chunks.push(indent.repeat(depth));
+      column = depth * width;
+    } else if (space) {
+      chunks.push(' ');
+      column++;
+    }
     chunks.push(text);
+    for (const char of text) {
+      if (char === '\n') column = 0;
+      else if (char === '\t') column += width - column % width;
+      else column++;
+    }
     onLine = true;
     breaks = 0;
   }
@@ -77,21 +138,28 @@ export function formatQuery(source: string, options: FormattingOptions): string 
       newline();
     } else if (token.kind === 'closeParen' || token.kind === 'closeBracket') {
       const group = stack.pop()!;
-      if (!group.compact) newline();
+      if (token.kind === 'closeBracket' && !group.compact) newline();
       write(token.text, stack.length);
     } else {
-      const postfix = token.kind === 'capture' || token.kind === 'quantifier';
+      const postfix = (token.kind === 'capture' && !parent?.predicate) || token.kind === 'quantifier';
       const joined = token.kind === 'colon' || token.kind === 'slash'
         || previous?.kind === 'slash' || previous?.kind === 'negation';
       const afterField = previous?.kind === 'colon';
-      const head = previous === parent?.open && token.kind === 'identifier';
+      const head = previous === parent?.open && (token.kind === 'identifier' || token.kind === 'predicate');
 
-      if (!postfix && !joined && !afterField && !head && !parent?.compact) newline(blank);
-      const space = token.kind !== 'quantifier' && !joined && previous !== parent?.open;
-      write(token.text, stack.length, space);
+      if (!postfix && !joined && !afterField && !head && !parent?.compact) {
+        newline(previous?.kind === 'comment' ? blank : !parent && previous !== undefined);
+      }
+      const space = needsSpace(previous, token);
 
       if (token.kind === 'openParen' || token.kind === 'openBracket') {
-        stack.push(groups.get(token)!);
+        const group = groups.get(token)!;
+        const start = onLine ? column + Number(space) : stack.length * width;
+        group.compact &&= start + group.width + tails[group.closeIndex]! <= 100;
+        write(token.text, stack.length, space);
+        stack.push(group);
+      } else {
+        write(token.text, stack.length, space);
       }
     }
   }
